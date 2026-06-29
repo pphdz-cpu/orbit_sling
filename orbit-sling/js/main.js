@@ -1,3 +1,9 @@
+/**
+ * Orbit Sling — Phase 1
+ * Responsive canvas shell with a continuous requestAnimationFrame loop
+ * that clears and redraws the screen each frame.
+ */
+
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
 
@@ -13,7 +19,11 @@ const stars = Array.from({ length: 120 }, () => ({
   twinkleOffset: Math.random() * Math.PI * 2,
 }));
 
-function drawBackground(timestamp) {
+function clearScreen() {
+  ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+}
+
+function drawSpaceBackground(timestamp) {
   const gradient = ctx.createLinearGradient(0, 0, 0, CANVAS_HEIGHT);
   gradient.addColorStop(0, "#0f1630");
   gradient.addColorStop(1, "#05060c");
@@ -30,7 +40,7 @@ function drawBackground(timestamp) {
   }
 }
 
-function drawReadyText() {
+function drawPhaseOnePlaceholder() {
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
@@ -44,8 +54,9 @@ function drawReadyText() {
 }
 
 function gameLoop(timestamp) {
-  drawBackground(timestamp);
-  drawReadyText();
+  clearScreen();
+  drawSpaceBackground(timestamp);
+  drawPhaseOnePlaceholder();
   requestAnimationFrame(gameLoop);
 }
 
