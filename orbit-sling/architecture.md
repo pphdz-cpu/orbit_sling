@@ -15,3 +15,6 @@
 
 ## Phase 1 Goal
 Setup a responsive HTML5 canvas, link the CSS and JS files, and establish a basic 60fps rendering loop that clears and redraws the screen.
+
+## Phase 2 Goal
+Spawn the comet and planets on the canvas. The comet starts near the bottom center and moves continuously upward. Draw 3–5 static planets scattered across the upper portion of the screen each frame using canvas `arc()` methods.

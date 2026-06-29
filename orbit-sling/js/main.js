@@ -1,7 +1,6 @@
 /**
- * Orbit Sling — Phase 1
- * Responsive canvas shell with a continuous requestAnimationFrame loop
- * that clears and redraws the screen each frame.
+ * Orbit Sling — Phase 2
+ * Spawn the comet and planets, then render them each frame.
  */
 
 const canvas = document.getElementById("game-canvas");
@@ -18,6 +17,32 @@ const stars = Array.from({ length: 120 }, () => ({
   twinkleSpeed: Math.random() * 0.02 + 0.005,
   twinkleOffset: Math.random() * Math.PI * 2,
 }));
+
+const comet = {
+  x: CANVAS_WIDTH / 2,
+  y: CANVAS_HEIGHT - 70,
+  radius: 8,
+  color: "#00e5ff",
+  velocityY: -2.5,
+};
+
+const planetColors = ["#ff6b6b", "#ffd166", "#9b5de5", "#06d6a0", "#f15bb5"];
+
+function createPlanets() {
+  const count = Math.floor(Math.random() * 3) + 3;
+  const padding = 36;
+  const upperMinY = padding;
+  const upperMaxY = CANVAS_HEIGHT * 0.45;
+
+  return Array.from({ length: count }, (_, index) => ({
+    x: padding + Math.random() * (CANVAS_WIDTH - padding * 2),
+    y: upperMinY + Math.random() * (upperMaxY - upperMinY),
+    radius: 16 + Math.random() * 12,
+    color: planetColors[index % planetColors.length],
+  }));
+}
+
+const planets = createPlanets();
 
 function clearScreen() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -40,23 +65,37 @@ function drawSpaceBackground(timestamp) {
   }
 }
 
-function drawPhaseOnePlaceholder() {
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
+function drawPlanets() {
+  for (const planet of planets) {
+    ctx.beginPath();
+    ctx.fillStyle = planet.color;
+    ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
 
-  ctx.fillStyle = "rgba(232, 237, 247, 0.92)";
-  ctx.font = "600 28px system-ui, sans-serif";
-  ctx.fillText("Orbit Sling Ready", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 12);
+function drawComet() {
+  ctx.beginPath();
+  ctx.fillStyle = "rgba(0, 229, 255, 0.25)";
+  ctx.arc(comet.x, comet.y, comet.radius * 1.8, 0, Math.PI * 2);
+  ctx.fill();
 
-  ctx.fillStyle = "rgba(232, 237, 247, 0.55)";
-  ctx.font = "14px system-ui, sans-serif";
-  ctx.fillText("Game loop running", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 22);
+  ctx.beginPath();
+  ctx.fillStyle = comet.color;
+  ctx.arc(comet.x, comet.y, comet.radius, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function updateComet() {
+  comet.y += comet.velocityY;
 }
 
 function gameLoop(timestamp) {
   clearScreen();
   drawSpaceBackground(timestamp);
-  drawPhaseOnePlaceholder();
+  updateComet();
+  drawPlanets();
+  drawComet();
   requestAnimationFrame(gameLoop);
 }
 
