@@ -1,6 +1,6 @@
 /**
- * Orbit Sling — Phase 2
- * Spawn the comet and planets, then render them each frame.
+ * Orbit Sling — Phase 2 (image assets)
+ * Spawn the comet and planets, then render them each frame with drawImage().
  */
 
 const canvas = document.getElementById("game-canvas");
@@ -8,6 +8,16 @@ const ctx = canvas.getContext("2d");
 
 const CANVAS_WIDTH = canvas.width;
 const CANVAS_HEIGHT = canvas.height;
+
+const ASSET_PATHS = {
+  comet: "assets/images/comet.png",
+  planet: "assets/images/planet.png",
+};
+
+const SPRITE_FRAMES = {
+  comet: { x: 210, y: 430, width: 150, height: 140, hitboxRadius: 28 },
+  planet: { x: 260, y: 30, width: 440, height: 540, hitboxRadius: 185 },
+};
 
 const stars = Array.from({ length: 120 }, () => ({
   x: Math.random() * CANVAS_WIDTH,
@@ -18,15 +28,17 @@ const stars = Array.from({ length: 120 }, () => ({
   twinkleOffset: Math.random() * Math.PI * 2,
 }));
 
+const images = {
+  comet: null,
+  planet: null,
+};
+
 const comet = {
   x: CANVAS_WIDTH / 2,
   y: CANVAS_HEIGHT - 70,
-  radius: 8,
-  color: "#00e5ff",
+  hitboxRadius: 15,
   velocityY: -2.5,
 };
-
-const planetColors = ["#ff6b6b", "#ffd166", "#9b5de5", "#06d6a0", "#f15bb5"];
 
 function createPlanets() {
   const count = Math.floor(Math.random() * 3) + 3;
@@ -34,15 +46,63 @@ function createPlanets() {
   const upperMinY = padding;
   const upperMaxY = CANVAS_HEIGHT * 0.45;
 
-  return Array.from({ length: count }, (_, index) => ({
-    x: padding + Math.random() * (CANVAS_WIDTH - padding * 2),
-    y: upperMinY + Math.random() * (upperMaxY - upperMinY),
-    radius: 16 + Math.random() * 12,
-    color: planetColors[index % planetColors.length],
-  }));
+  return Array.from({ length: count }, () => {
+    const hitboxRadius = 16 + Math.random() * 12;
+
+    return {
+      x: padding + Math.random() * (CANVAS_WIDTH - padding * 2),
+      y: upperMinY + Math.random() * (upperMaxY - upperMinY),
+      hitboxRadius,
+    };
+  });
 }
 
 const planets = createPlanets();
+
+function loadImage(key, src) {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      images[key] = image;
+      resolve(image);
+    };
+    image.onerror = () => {
+      reject(new Error(`Failed to load image: ${src}`));
+    };
+    image.src = src;
+  });
+}
+
+function loadAssets() {
+  return Promise.all(
+    Object.entries(ASSET_PATHS).map(([key, src]) => loadImage(key, src))
+  );
+}
+
+function getDisplaySize(frame, hitboxRadius) {
+  const scale = (hitboxRadius * 2) / (frame.hitboxRadius * 2);
+
+  return {
+    width: frame.width * scale,
+    height: frame.height * scale,
+  };
+}
+
+function drawSprite(image, frame, x, y, hitboxRadius) {
+  const { width, height } = getDisplaySize(frame, hitboxRadius);
+
+  ctx.drawImage(
+    image,
+    frame.x,
+    frame.y,
+    frame.width,
+    frame.height,
+    x - width / 2,
+    y - height / 2,
+    width,
+    height
+  );
+}
 
 function clearScreen() {
   ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -67,23 +127,12 @@ function drawSpaceBackground(timestamp) {
 
 function drawPlanets() {
   for (const planet of planets) {
-    ctx.beginPath();
-    ctx.fillStyle = planet.color;
-    ctx.arc(planet.x, planet.y, planet.radius, 0, Math.PI * 2);
-    ctx.fill();
+    drawSprite(images.planet, SPRITE_FRAMES.planet, planet.x, planet.y, planet.hitboxRadius);
   }
 }
 
 function drawComet() {
-  ctx.beginPath();
-  ctx.fillStyle = "rgba(0, 229, 255, 0.25)";
-  ctx.arc(comet.x, comet.y, comet.radius * 1.8, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.beginPath();
-  ctx.fillStyle = comet.color;
-  ctx.arc(comet.x, comet.y, comet.radius, 0, Math.PI * 2);
-  ctx.fill();
+  drawSprite(images.comet, SPRITE_FRAMES.comet, comet.x, comet.y, comet.hitboxRadius);
 }
 
 function updateComet() {
@@ -99,4 +148,14 @@ function gameLoop(timestamp) {
   requestAnimationFrame(gameLoop);
 }
 
-requestAnimationFrame(gameLoop);
+loadAssets()
+  .then(() => {
+    requestAnimationFrame(gameLoop);
+  })
+  .catch((error) => {
+    console.error(error);
+    ctx.fillStyle = "#e8edf7";
+    ctx.font = "16px system-ui, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Failed to load game assets.", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+  });
