@@ -9,7 +9,7 @@
 * **Layout:** A clean, centered mobile-portrait aspect ratio (e.g., 400x600) with a dark space background.
 
 ## Core Entities
-1. **The Comet (Player):** A small circle. Constantly moves. 
+1. **The Comet (Player):** A small circle. Constantly moves.
 2. **The Planets (Anchors):** Static circles scattered on the map.
 3. **The Tether:** A line drawn between the comet and the nearest planet when the player holds the screen.
 
